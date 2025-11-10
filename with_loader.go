@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// withLoader is the internal implementation of Lazy[T] that supports a loader
+// function, optional TTL-based per-context caching, and preloaded values.
 type withLoader[T any] struct {
 	values  map[any]T
 	times   map[any]*time.Time
@@ -14,6 +16,8 @@ type withLoader[T any] struct {
 	mu      *sync.Mutex
 }
 
+// newWithLoader constructs a withLoader that will call loader on demand. If
+// withTTL is true, returned values are cached for the provided ttl duration.
 func newWithLoader[T any](loader LazyFunc[T], withTTL bool, ttl time.Duration) *withLoader[T] {
 	return &withLoader[T]{
 		values:  make(map[any]T),
@@ -25,6 +29,9 @@ func newWithLoader[T any](loader LazyFunc[T], withTTL bool, ttl time.Duration) *
 	}
 }
 
+// newWithLoaderPreloaded constructs a withLoader pre-populated with a value
+// for the provided ctx. This is useful when you already have a value and want
+// to expose it through the Lazy API.
 func newWithLoaderPreloaded[T any](loader LazyFunc[T], value T, ctx any, withTTL bool, ttl time.Duration) *withLoader[T] {
 	values := make(map[any]T)
 	values[ctx] = value
@@ -39,6 +46,9 @@ func newWithLoaderPreloaded[T any](loader LazyFunc[T], value T, ctx any, withTTL
 	}
 }
 
+// Value returns the cached value for ctx if present and not expired. Otherwise
+// it calls the loader (if set) to obtain the value, caches it, and returns it.
+// The method is safe for concurrent use because it synchronizes using a mutex.
 func (l withLoader[T]) Value(ctx any) (T, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -66,13 +76,15 @@ func (l withLoader[T]) Value(ctx any) (T, error) {
 	return v, err
 }
 
-func (l withLoader[T]) Reset(ctx any) {
+// Clear removes the cached value for the given context.
+func (l withLoader[T]) Clear(ctx any) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	delete(l.values, ctx)
 }
 
-func (l withLoader[T]) ResetAll() {
+// ClearAll clears the entire cache maintained by the withLoader.
+func (l withLoader[T]) ClearAll() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.values = make(map[any]T)
