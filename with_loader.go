@@ -49,7 +49,7 @@ func newWithLoaderPreloaded[T any](loader LazyFunc[T], value T, ctx any, withTTL
 // Value returns the cached value for ctx if present and not expired. Otherwise
 // it calls the loader (if set) to obtain the value, caches it, and returns it.
 // The method is safe for concurrent use because it synchronizes using a mutex.
-func (l withLoader[T]) Value(ctx any) (T, error) {
+func (l *withLoader[T]) Value(ctx any) (T, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -77,15 +77,17 @@ func (l withLoader[T]) Value(ctx any) (T, error) {
 }
 
 // Clear removes the cached value for the given context.
-func (l withLoader[T]) Clear(ctx any) {
+func (l *withLoader[T]) Clear(ctx any) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	delete(l.values, ctx)
+	delete(l.times, ctx)
 }
 
 // ClearAll clears the entire cache maintained by the withLoader.
-func (l withLoader[T]) ClearAll() {
+func (l *withLoader[T]) ClearAll() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.values = make(map[any]T)
+	l.times = map[any]*time.Time{}
 }

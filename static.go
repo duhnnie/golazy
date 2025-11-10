@@ -8,16 +8,16 @@ type static[T any] struct {
 }
 
 // Value returns the static value and a nil error.
-func (l static[T]) Value(ctx any) (T, error) {
+func (l *static[T]) Value(ctx any) (T, error) {
 	return l.value, nil
 }
 
 // Clear is a no-op for static values.
-func (l static[T]) Clear(ctx any) {
+func (l *static[T]) Clear(ctx any) {
 	// nothing
 }
 
 // ClearAll is a no-op for static values.
-func (l static[T]) ClearAll() {
+func (l *static[T]) ClearAll() {
 	// nothing
 }
