@@ -1,3 +1,6 @@
+// Package golazy provides a context-based lazy-loading mechanism
+// for variables, with support for per-context caching, preloaded
+// values and time-to-live (TTL) functionality.
 package golazy
 
 import (
