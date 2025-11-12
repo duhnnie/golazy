@@ -1,9 +1,9 @@
 # golazy
 
-golazy is a tiny, generic Go helper for lazy-loading values.
+golazy provides a context-based lazy-loading mechanism for variables, with support for per-context caching, preloaded values and time-to-live (TTL) functionality.
+
 It provides a small `Lazy[T]` abstraction that can load values on demand using a
-user-provided loader function. It supports optional per-context TTL caching and
-preloaded values.
+user-provided loader function.
 
 ## Installation
 
